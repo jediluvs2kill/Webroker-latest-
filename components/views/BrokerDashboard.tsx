@@ -7,12 +7,15 @@ import { Lead, LeadStatus } from '../../types';
 import { Phone, CheckCircle2, Award, Wallet, ArrowRight, UserPlus, FileText, Sparkles, Send, X, Zap, Loader2 } from 'lucide-react';
 import { SmartCopilot } from '../SmartCopilot';
 import { suggestNextAction } from '../../services/geminiService';
+import { supabase } from '../../services/supabase';
 
 export const BrokerDashboard: React.FC = () => {
+  const [leads, setLeads] = useState<Lead[]>(MOCK_LEADS);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [aiSuggestion, setAiSuggestion] = useState<{ action: string, reasoning: string } | null>(null);
   const [isAllocationModalOpen, setIsAllocationModalOpen] = useState(false);
   const [allocationForm, setAllocationForm] = useState({ projectId: '', amount: '' });
+  const [isLoadingLeads, setIsLoadingLeads] = useState(false);
   
   // Simulated incoming ticket from Buyer AI
   const [incomingTicket, setIncomingTicket] = useState<{id: string, buyer: string, summary: string, budget: string} | null>({
@@ -21,6 +24,43 @@ export const BrokerDashboard: React.FC = () => {
     summary: 'High-intent buyer via Astra. Looking for 3BHK in Downtown. Budget verified > 2Cr. Immediate site visit requested.',
     budget: '2.5 Cr'
   });
+
+  // Fetch Leads from Supabase
+  useEffect(() => {
+    const fetchLeads = async () => {
+      setIsLoadingLeads(true);
+      try {
+        const { data, error } = await supabase.from('leads').select('*');
+        
+        if (!error && data && data.length > 0) {
+          // Map snake_case DB fields to camelCase Types
+          const mappedLeads: Lead[] = data.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            phoneHash: item.phone_hash, // Mapping DB snake_case to App camelCase
+            budget: item.budget,
+            status: item.status as LeadStatus,
+            lastActivity: item.last_activity, // Mapping DB snake_case to App camelCase
+            score: item.score,
+            assignedBrokerId: item.assigned_broker_id
+          }));
+          
+          setLeads(mappedLeads);
+          console.log("Loaded leads from Supabase");
+        } else {
+          console.log("Using Mock Data (Supabase table 'leads' empty or not found)");
+          setLeads(MOCK_LEADS);
+        }
+      } catch (err) {
+        console.warn("Error fetching from Supabase, falling back to mocks", err);
+        setLeads(MOCK_LEADS);
+      } finally {
+        setIsLoadingLeads(false);
+      }
+    };
+
+    fetchLeads();
+  }, []);
 
   useEffect(() => {
     if (selectedLead) {
@@ -152,44 +192,53 @@ export const BrokerDashboard: React.FC = () => {
                     action={<Button size="sm"><UserPlus className="w-4 h-4 mr-2" />Add Lead</Button>} 
                 />
                 <div className="space-y-3">
-                    {MOCK_LEADS.sort((a,b) => b.score - a.score).map((lead) => (
-                        <div 
-                            key={lead.id} 
-                            onClick={() => setSelectedLead(lead)}
-                            className={`p-4 rounded-xl border transition-all cursor-pointer hover:shadow-md ${selectedLead?.id === lead.id ? 'border-brand-500 bg-brand-50' : 'border-gray-100 hover:border-gray-200'}`}
-                        >
-                            <div className="flex items-start justify-between">
-                                <div className="flex items-center space-x-3">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${selectedLead?.id === lead.id ? 'bg-brand-200 text-brand-800' : 'bg-gray-100 text-gray-600'}`}>
-                                        {lead.name.charAt(0)}
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold text-gray-900">{lead.name}</h4>
-                                        <p className="text-xs text-gray-500 truncate">{lead.budget} • Score: <span className="text-green-600 font-medium">{lead.score}</span></p>
-                                    </div>
-                                </div>
-                                <span className={`px-2 py-1 rounded-md text-xs font-medium ${getStatusColor(lead.status)}`}>
-                                    {lead.status}
-                                </span>
-                            </div>
-                            <div className="mt-3 flex items-center justify-between">
-                                <p className="text-xs text-gray-500">Last: {lead.lastActivity}</p>
-                                <div className="flex space-x-2">
-                                    <button 
-                                        className="p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-100 rounded-full transition-colors"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setSelectedLead(lead);
-                                            setIsAllocationModalOpen(true);
-                                        }}
-                                        title="Request Allocation Ticket"
-                                    >
-                                        <Send className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </div>
+                    {isLoadingLeads ? (
+                        <div className="flex items-center justify-center py-10 text-gray-400">
+                            <Loader2 className="w-6 h-6 animate-spin mr-2" /> Loading leads...
                         </div>
-                    ))}
+                    ) : (
+                        leads.sort((a,b) => b.score - a.score).map((lead) => (
+                            <div 
+                                key={lead.id} 
+                                onClick={() => setSelectedLead(lead)}
+                                className={`p-4 rounded-xl border transition-all cursor-pointer hover:shadow-md ${selectedLead?.id === lead.id ? 'border-brand-500 bg-brand-50' : 'border-gray-100 hover:border-gray-200'}`}
+                            >
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-center space-x-3">
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${selectedLead?.id === lead.id ? 'bg-brand-200 text-brand-800' : 'bg-gray-100 text-gray-600'}`}>
+                                            {lead.name.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900">{lead.name}</h4>
+                                            <p className="text-xs text-gray-500 truncate">{lead.budget} • Score: <span className="text-green-600 font-medium">{lead.score}</span></p>
+                                        </div>
+                                    </div>
+                                    <span className={`px-2 py-1 rounded-md text-xs font-medium ${getStatusColor(lead.status)}`}>
+                                        {lead.status}
+                                    </span>
+                                </div>
+                                <div className="mt-3 flex items-center justify-between">
+                                    <p className="text-xs text-gray-500">Last: {lead.lastActivity}</p>
+                                    <div className="flex space-x-2">
+                                        <button 
+                                            className="p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-100 rounded-full transition-colors"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedLead(lead);
+                                                setIsAllocationModalOpen(true);
+                                            }}
+                                            title="Request Allocation Ticket"
+                                        >
+                                            <Send className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                    {!isLoadingLeads && leads.length === 0 && (
+                         <div className="text-center py-10 text-gray-400 text-sm">No active leads found.</div>
+                    )}
                 </div>
             </Card>
         </div>

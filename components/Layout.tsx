@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Role } from '../types';
-import { LayoutDashboard, Building2, Users, Briefcase, Menu, Bell, Search, LogOut, MessageSquare, Home } from 'lucide-react';
+import { LayoutDashboard, Building2, Users, Briefcase, Menu, Bell, Search, LogOut, MessageSquare, Home, UserCircle } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,6 +9,8 @@ interface LayoutProps {
   onRoleChange: (role: Role) => void;
   currentView: string;
   onNavigate: (view: string) => void;
+  userEmail?: string;
+  onLogout?: () => void;
 }
 
 export const Layout: React.FC<LayoutProps> = ({ 
@@ -15,12 +18,12 @@ export const Layout: React.FC<LayoutProps> = ({
   currentRole, 
   onRoleChange,
   currentView,
-  onNavigate 
+  onNavigate,
+  userEmail,
+  onLogout
 }) => {
   const [isSidebarOpen, setSidebarOpen] = React.useState(false);
 
-  // If we are on the landing page, we might want a different layout or just render children full width.
-  // But assuming the Landing Page is just another view inside this shell for now, or we hide sidebar.
   const isLanding = currentView === 'landing';
 
   const getNavItems = () => {
@@ -40,7 +43,7 @@ export const Layout: React.FC<LayoutProps> = ({
       case Role.BUYER:
         return [
           { id: 'home', label: 'Concierge', icon: MessageSquare },
-          { id: 'browse', label: 'Browse Brokers', icon: Users }, // Changed from Browse Homes
+          { id: 'browse', label: 'Browse Brokers', icon: Users },
           { id: 'shortlist', label: 'Shortlist', icon: Building2 },
         ];
       default:
@@ -53,7 +56,6 @@ export const Layout: React.FC<LayoutProps> = ({
   const handleScrollTo = (id: string) => {
     if (currentView !== 'landing') {
         onNavigate('landing');
-        // Allow time for render then scroll
         setTimeout(() => {
             document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
@@ -74,10 +76,29 @@ export const Layout: React.FC<LayoutProps> = ({
                         <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-500/30">W</div>
                         <span className="text-xl font-bold text-gray-900 tracking-tight">WeBroker</span>
                     </div>
-                    <div className="flex gap-6">
-                        <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors">Home</button>
-                        <button onClick={() => handleScrollTo('features')} className="text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors">About</button>
-                        <button onClick={() => handleScrollTo('contact')} className="text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors">Contact</button>
+                    <div className="flex items-center gap-6">
+                        <div className="hidden md:flex gap-6">
+                            <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors">Home</button>
+                            <button onClick={() => handleScrollTo('features')} className="text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors">About</button>
+                            <button onClick={() => handleScrollTo('contact')} className="text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors">Contact</button>
+                        </div>
+                        {userEmail ? (
+                            <div className="flex items-center gap-3 pl-6 border-l border-gray-200">
+                                <div className="text-right hidden md:block">
+                                    <p className="text-xs text-gray-400">Logged in as</p>
+                                    <p className="text-sm font-bold text-gray-800">{userEmail.split('@')[0]}</p>
+                                </div>
+                                <button 
+                                    onClick={onLogout}
+                                    className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-600 transition-colors"
+                                    title="Sign Out"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ) : (
+                            <button className="text-sm font-bold text-brand-600 hover:text-brand-700">Sign In</button>
+                        )}
                     </div>
                 </div>
             </header>
@@ -91,7 +112,7 @@ export const Layout: React.FC<LayoutProps> = ({
   return (
     <div className="min-h-screen flex bg-slate-50">
       {/* Sidebar - Desktop */}
-      <div className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200 fixed h-full z-10">
+      <div className="hidden md:flex flex-col w-64 bg-white border-r border-gray-200 fixed h-full z-10 shadow-sm">
         <div 
             className="p-6 flex items-center space-x-2 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors"
             onClick={() => onNavigate('landing')}
@@ -105,9 +126,9 @@ export const Layout: React.FC<LayoutProps> = ({
                 <button
                     key={item.id}
                     onClick={() => onNavigate(item.id)}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                         currentView === item.id 
-                            ? 'bg-brand-50 text-brand-700' 
+                            ? 'bg-brand-50 text-brand-700 shadow-sm' 
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                 >
@@ -117,45 +138,78 @@ export const Layout: React.FC<LayoutProps> = ({
             ))}
         </nav>
 
-        {/* Role Switcher (For Prototype Demo) */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50">
-            <p className="text-xs font-semibold text-gray-400 uppercase mb-2 ml-1">Simulate Persona</p>
-            <div className="flex flex-col space-y-2">
+        {/* User Profile Section */}
+        <div className="p-4 border-t border-gray-100 bg-gray-50/50">
+            {userEmail && (
+                <div className="mb-4 flex items-center gap-3 px-2">
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border border-indigo-200">
+                        {userEmail.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="overflow-hidden">
+                        <p className="text-sm font-bold text-gray-900 truncate">{userEmail.split('@')[0]}</p>
+                        <p className="text-xs text-gray-500 truncate">{currentRole}</p>
+                    </div>
+                </div>
+            )}
+            
+            <button 
+                onClick={onLogout}
+                className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-colors"
+            >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out</span>
+            </button>
+        </div>
+
+        {/* Role Switcher (Simulator) - Kept for Demo purposes, but behind auth in real app */}
+        <div className="p-4 border-t border-gray-100">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-1">Persona Simulator</p>
+            <div className="grid grid-cols-3 gap-1">
                 <button 
                     onClick={() => onRoleChange(Role.BUILDER)}
-                    className={`text-xs px-3 py-2 rounded border ${currentRole === Role.BUILDER ? 'bg-white border-brand-500 shadow-sm text-brand-700' : 'border-gray-200 text-gray-600 hover:bg-white'}`}
+                    title="Switch to Builder"
+                    className={`text-xs p-1.5 rounded text-center transition-colors ${currentRole === Role.BUILDER ? 'bg-brand-100 text-brand-700 font-bold' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                 >
-                    Builder View
+                    Bldr
                 </button>
                 <button 
                     onClick={() => onRoleChange(Role.BROKER)}
-                    className={`text-xs px-3 py-2 rounded border ${currentRole === Role.BROKER ? 'bg-white border-brand-500 shadow-sm text-brand-700' : 'border-gray-200 text-gray-600 hover:bg-white'}`}
+                    title="Switch to Broker"
+                    className={`text-xs p-1.5 rounded text-center transition-colors ${currentRole === Role.BROKER ? 'bg-brand-100 text-brand-700 font-bold' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                 >
-                    Broker View
+                    Brok
                 </button>
                 <button 
                     onClick={() => onRoleChange(Role.BUYER)}
-                    className={`text-xs px-3 py-2 rounded border ${currentRole === Role.BUYER ? 'bg-white border-brand-500 shadow-sm text-brand-700' : 'border-gray-200 text-gray-600 hover:bg-white'}`}
+                    title="Switch to Buyer"
+                    className={`text-xs p-1.5 rounded text-center transition-colors ${currentRole === Role.BUYER ? 'bg-brand-100 text-brand-700 font-bold' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                 >
-                    Buyer View
+                    Buyr
                 </button>
             </div>
         </div>
       </div>
 
       {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 w-full bg-white border-b z-20 px-4 py-3 flex items-center justify-between">
+      <div className="md:hidden fixed top-0 w-full bg-white border-b z-20 px-4 py-3 flex items-center justify-between shadow-sm">
           <div className="flex items-center space-x-2" onClick={() => onNavigate('landing')}>
             <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">W</div>
             <span className="font-bold text-gray-900">WeBroker</span>
           </div>
-          <button onClick={() => setSidebarOpen(!isSidebarOpen)}>
-              <Menu className="w-6 h-6 text-gray-600" />
-          </button>
+          <div className="flex items-center gap-2">
+              {userEmail && (
+                 <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
+                    {userEmail.charAt(0).toUpperCase()}
+                 </div>
+              )}
+              <button onClick={() => setSidebarOpen(!isSidebarOpen)} className="p-1">
+                  <Menu className="w-6 h-6 text-gray-600" />
+              </button>
+          </div>
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 md:ml-64 p-4 md:p-8 mt-14 md:mt-0">
+      <main className="flex-1 md:ml-64 p-4 md:p-8 mt-14 md:mt-0 transition-all">
         {/* Top Header */}
         <header className="flex justify-between items-center mb-8">
             <div>
@@ -167,15 +221,15 @@ export const Layout: React.FC<LayoutProps> = ({
                 </p>
             </div>
             <div className="flex items-center space-x-4">
-                <div className="hidden md:flex relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <div className="hidden lg:flex relative group">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-brand-500" />
                     <input 
                         type="text" 
-                        placeholder="Search..." 
-                        className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 w-64"
+                        placeholder="Search ecosystem..." 
+                        className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 w-64 transition-all"
                     />
                 </div>
-                <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors bg-white hover:bg-gray-50 rounded-full border border-transparent hover:border-gray-200">
                     <Bell className="w-5 h-5" />
                     <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
                 </button>
