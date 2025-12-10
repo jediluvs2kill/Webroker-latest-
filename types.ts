@@ -1,4 +1,5 @@
 
+
 export enum Role {
   BUILDER = 'BUILDER',
   BROKER = 'BROKER',
@@ -91,6 +92,6 @@ export interface AllocationRequest {
   projectId: string;
   projectName: string;
   investmentAppetite: number; // In Rupees
-  status: 'PENDING' | 'APPROVED' | 'WAITLISTED';
+  status: 'PENDING' | 'APPROVED' | 'WAITLISTED' | 'REJECTED';
   timestamp: string;
 }
