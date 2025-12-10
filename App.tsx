@@ -23,6 +23,14 @@ function App() {
   const [pendingRole, setPendingRole] = useState<Role | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
 
+  // Prompt auth if a protected view is requested without a session
+  useEffect(() => {
+    if (!isInitializing && !session && currentView !== 'landing') {
+      setCurrentView('landing');
+      setIsAuthOpen(true);
+    }
+  }, [currentView, isInitializing, session]);
+
   useEffect(() => {
     // Check active session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -80,6 +88,11 @@ function App() {
     setCurrentRole(Role.BROKER); // Reset to default state
   };
 
+  const handleOpenAuth = () => {
+    setPendingRole(null);
+    setIsAuthOpen(true);
+  };
+
   const renderView = () => {
     if (currentView === 'landing') {
       return <LandingPage onSelectRole={handleRoleChange} />;
@@ -114,7 +127,7 @@ function App() {
   };
 
   if (isInitializing) {
-     return <div className="min-h-screen flex items-center justify-center bg-slate-50"><div className="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin"></div></div>;
+     return <div className="min-h-screen flex items-center justify-center bg-slate-50"><div className="w-8 h-8 border-4 border-transparent border-t-brand-600 rounded-full animate-spin"></div></div>;
   }
 
   return (
@@ -126,6 +139,7 @@ function App() {
         onNavigate={setCurrentView}
         userEmail={session?.user?.email}
         onLogout={handleLogout}
+        onOpenAuth={handleOpenAuth}
       >
         {renderView()}
       </Layout>
