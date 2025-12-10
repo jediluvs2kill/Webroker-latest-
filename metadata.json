@@ -1,0 +1,7 @@
+{
+  "name": "WeBroker OS",
+  "description": "A unified GTM OS for real estate Builders, Brokers, and Buyers. Features real-time inventory, AI-driven lead routing, and instant commission tracking.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
