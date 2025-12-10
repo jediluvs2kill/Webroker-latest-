@@ -11,16 +11,18 @@ interface LayoutProps {
   onNavigate: (view: string) => void;
   userEmail?: string;
   onLogout?: () => void;
+  onOpenAuth?: () => void;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ 
-  children, 
-  currentRole, 
+export const Layout: React.FC<LayoutProps> = ({
+  children,
+  currentRole,
   onRoleChange,
   currentView,
   onNavigate,
   userEmail,
-  onLogout
+  onLogout,
+  onOpenAuth
 }) => {
   const [isSidebarOpen, setSidebarOpen] = React.useState(false);
 
@@ -97,7 +99,12 @@ export const Layout: React.FC<LayoutProps> = ({
                                 </button>
                             </div>
                         ) : (
-                            <button className="text-sm font-bold text-brand-600 hover:text-brand-700">Sign In</button>
+                            <button
+                                onClick={onOpenAuth}
+                                className="text-sm font-bold text-brand-600 hover:text-brand-700"
+                            >
+                                Sign In
+                            </button>
                         )}
                     </div>
                 </div>
