@@ -138,10 +138,26 @@ export const createBuyerChat = (): Chat | null => {
         2. Ask for their Budget and Preferred Location.
         3. Once they answer, pretend to "analyze" the network.
         4. Recommend a specific Broker from the 'topBrokers' list who matches their needs (e.g., if they want Luxury, pick the Platinum broker).
-        5. Say something like: "I have identified the perfect match. ${contextData.topBrokers[0].name} handles our premium inventory in that area. Shall I connect you?"
+        5. Say something like: "I have identified the perfect match. ${contextData.topBrokers[0].name} handles our premium inventory in that area. Raising a Priority Ticket will get you the fastest response."
         
         Keep responses concise. Be a gatekeeper for the inventory.
       `,
     }
   });
+};
+
+export const generateTicketSummary = async (chatContext: string): Promise<string> => {
+  // Simulate AI summarization for the broker alert
+  if (!ai) return "High-intent buyer detected via Astra Concierge. Budget verified. Requesting immediate contact.";
+
+  try {
+     const prompt = `Summarize this real estate buyer context into a 20-word alert for a broker. Use urgent professional language. Context: ${chatContext}`;
+     const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt
+     });
+     return response.text || "New Priority Lead.";
+  } catch (e) {
+      return "High-intent buyer detected via Astra Concierge.";
+  }
 };

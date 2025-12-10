@@ -4,7 +4,7 @@ import { Card, CardHeader } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { MOCK_LEADS, MOCK_BROKER_STATS, MOCK_ACTIVITIES, MOCK_PROJECTS } from '../../constants';
 import { Lead, LeadStatus } from '../../types';
-import { Phone, CheckCircle2, Award, Wallet, ArrowRight, UserPlus, FileText, Sparkles, Send, X } from 'lucide-react';
+import { Phone, CheckCircle2, Award, Wallet, ArrowRight, UserPlus, FileText, Sparkles, Send, X, Zap, Loader2 } from 'lucide-react';
 import { SmartCopilot } from '../SmartCopilot';
 import { suggestNextAction } from '../../services/geminiService';
 
@@ -13,6 +13,14 @@ export const BrokerDashboard: React.FC = () => {
   const [aiSuggestion, setAiSuggestion] = useState<{ action: string, reasoning: string } | null>(null);
   const [isAllocationModalOpen, setIsAllocationModalOpen] = useState(false);
   const [allocationForm, setAllocationForm] = useState({ projectId: '', amount: '' });
+  
+  // Simulated incoming ticket from Buyer AI
+  const [incomingTicket, setIncomingTicket] = useState<{id: string, buyer: string, summary: string, budget: string} | null>({
+    id: 'tkt-live-01',
+    buyer: 'Anjali Desai',
+    summary: 'High-intent buyer via Astra. Looking for 3BHK in Downtown. Budget verified > 2Cr. Immediate site visit requested.',
+    budget: '2.5 Cr'
+  });
 
   useEffect(() => {
     if (selectedLead) {
@@ -38,8 +46,57 @@ export const BrokerDashboard: React.FC = () => {
       setIsAllocationModalOpen(false);
   };
 
+  const handleAcceptTicket = () => {
+      setIncomingTicket(null);
+      // In a real app, this would add the lead to the database
+      alert("Lead accepted! Added 'Anjali Desai' to your pipeline.");
+  };
+
   return (
     <div className="space-y-6 pb-20">
+      
+      {/* Priority Desk (Incoming Tickets) */}
+      {incomingTicket && (
+        <div className="animate-slide-up">
+            <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center">
+                <Zap className="w-5 h-5 text-yellow-500 mr-2" /> Priority Desk
+            </h2>
+            <Card className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white mb-8 border-none shadow-lg shadow-indigo-500/20">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                    <div>
+                        <div className="flex items-center space-x-2 mb-2">
+                            <span className="bg-white/20 text-indigo-50 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center">
+                                AI Alert
+                            </span>
+                            <span className="text-indigo-200 text-xs">Just now</span>
+                        </div>
+                        <h3 className="text-xl font-bold">{incomingTicket.buyer}</h3>
+                        <p className="text-indigo-100 text-sm mt-1 max-w-xl leading-relaxed opacity-90">{incomingTicket.summary}</p>
+                        <div className="mt-3 flex items-center space-x-4">
+                            <span className="text-xs bg-black/20 px-2 py-1 rounded border border-white/10">Budget: {incomingTicket.budget}</span>
+                            <span className="text-xs bg-black/20 px-2 py-1 rounded border border-white/10">Source: Astra Concierge</span>
+                        </div>
+                    </div>
+                    <div className="flex space-x-3 mt-4 md:mt-0 w-full md:w-auto">
+                        <Button 
+                            onClick={() => setIncomingTicket(null)} 
+                            variant="ghost" 
+                            className="text-indigo-100 hover:bg-white/10 hover:text-white flex-1 md:flex-none"
+                        >
+                            Pass
+                        </Button>
+                        <Button 
+                            onClick={handleAcceptTicket} 
+                            className="bg-white text-indigo-700 hover:bg-indigo-50 border-none flex-1 md:flex-none font-bold"
+                        >
+                            Accept Lead
+                        </Button>
+                    </div>
+                </div>
+            </Card>
+        </div>
+      )}
+
       {/* Broker Impact Index & Wallet */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-2 bg-gradient-to-r from-slate-900 to-slate-800 text-white border-none">

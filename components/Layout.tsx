@@ -40,7 +40,7 @@ export const Layout: React.FC<LayoutProps> = ({
       case Role.BUYER:
         return [
           { id: 'home', label: 'Concierge', icon: MessageSquare },
-          { id: 'browse', label: 'Browse Homes', icon: Home },
+          { id: 'browse', label: 'Browse Brokers', icon: Users }, // Changed from Browse Homes
           { id: 'shortlist', label: 'Shortlist', icon: Building2 },
         ];
       default:
@@ -160,10 +160,10 @@ export const Layout: React.FC<LayoutProps> = ({
         <header className="flex justify-between items-center mb-8">
             <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                    {currentRole === Role.BUYER && currentView === 'home' ? 'Concierge' : currentView.charAt(0).toUpperCase() + currentView.slice(1)}
+                    {currentRole === Role.BUYER && currentView === 'home' ? 'Concierge' : currentView === 'browse' && currentRole === Role.BUYER ? 'Partner Directory' : currentView.charAt(0).toUpperCase() + currentView.slice(1)}
                 </h1>
                 <p className="text-sm text-gray-500">
-                    {currentRole === Role.BUILDER ? 'Admin Overview' : currentRole === Role.BROKER ? 'Partner Portal' : 'Find Your Dream Home'}
+                    {currentRole === Role.BUILDER ? 'Admin Overview' : currentRole === Role.BROKER ? 'Partner Portal' : 'Verified Broker Network'}
                 </p>
             </div>
             <div className="flex items-center space-x-4">

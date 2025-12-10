@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Layout } from './components/Layout';
 import { BuilderDashboard } from './components/views/BuilderDashboard';
 import { BrokerDashboard } from './components/views/BrokerDashboard';
 import { InventoryView } from './components/views/InventoryView';
 import { BuyerView } from './components/views/BuyerView';
+import { BrokerListView } from './components/views/BrokerListView';
 import { LandingPage } from './components/views/LandingPage';
 import { Role } from './types';
 
@@ -28,7 +28,7 @@ function App() {
     }
 
     if (currentRole === Role.BUYER) {
-      if (currentView === 'browse') return <InventoryView />;
+      if (currentView === 'browse') return <BrokerListView />; // Changed to BrokerListView
       return <BuyerView />;
     }
 

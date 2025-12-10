@@ -1,5 +1,6 @@
+
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, CheckCircle2, ShieldCheck, Award } from 'lucide-react';
+import { Send, Bot, User, Sparkles, CheckCircle2, ShieldCheck, Award, Ticket, Loader2 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { MOCK_BROKERS } from '../../constants';
@@ -13,6 +14,8 @@ export const BuyerView: React.FC = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isMatched, setIsMatched] = useState(false); // Visual state to show "Matching..."
+  const [ticketState, setTicketState] = useState<{[key: string]: 'idle' | 'loading' | 'sent'}>({});
+  
   const chatSessionRef = useRef<Chat | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -59,6 +62,23 @@ export const BuyerView: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRaiseTicket = async (brokerId: string, brokerName: string) => {
+    setTicketState(prev => ({...prev, [brokerId]: 'loading'}));
+
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    setTicketState(prev => ({...prev, [brokerId]: 'sent'}));
+
+    const ticketId = `TKT-${Math.floor(Math.random() * 10000) + 1000}`;
+
+    // Inject system message into chat
+    setMessages(prev => [...prev, { 
+      role: 'ai', 
+      text: `✅ Priority Ticket #${ticketId} raised for ${brokerName}. I have sent them your requirements summary. They are reviewing it now and will accept your request shortly.` 
+    }]);
   };
 
   return (
@@ -197,14 +217,32 @@ export const BuyerView: React.FC = () => {
                     </div>
 
                     <div className="mt-4 pt-3 border-t border-gray-100">
-                        <Button 
-                            fullWidth 
-                            size="sm" 
-                            variant={isMatched && idx === 0 ? 'primary' : 'outline'}
-                            className={isMatched && idx === 0 ? 'animate-bounce-subtle' : ''}
-                        >
-                            {isMatched && idx === 0 ? 'Connect Now' : 'View Profile'}
-                        </Button>
+                        {isMatched && idx === 0 ? (
+                            <Button 
+                                fullWidth 
+                                size="sm" 
+                                onClick={() => handleRaiseTicket(broker.id, broker.name)}
+                                disabled={ticketState[broker.id] === 'sent'}
+                                variant={ticketState[broker.id] === 'sent' ? 'secondary' : 'primary'}
+                                className={ticketState[broker.id] !== 'sent' ? 'animate-bounce-subtle' : ''}
+                            >
+                                {ticketState[broker.id] === 'loading' ? (
+                                    <span className="flex items-center"><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Generating Ticket...</span>
+                                ) : ticketState[broker.id] === 'sent' ? (
+                                    <span className="flex items-center"><CheckCircle2 className="w-4 h-4 mr-2"/> Priority Ticket Sent</span>
+                                ) : (
+                                    <span className="flex items-center"><Ticket className="w-4 h-4 mr-2"/> Raise Priority Ticket</span>
+                                )}
+                            </Button>
+                        ) : (
+                             <Button 
+                                fullWidth 
+                                size="sm" 
+                                variant="outline"
+                            >
+                                View Profile
+                            </Button>
+                        )}
                     </div>
                 </div>
                 {/* Best Match Label */}
