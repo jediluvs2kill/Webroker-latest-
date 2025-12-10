@@ -95,3 +95,24 @@ export interface AllocationRequest {
   status: 'PENDING' | 'APPROVED' | 'WAITLISTED' | 'REJECTED';
   timestamp: string;
 }
+
+export interface Transaction {
+  id: string;
+  date: string;
+  description: string;
+  amount: number;
+  type: 'CREDIT' | 'DEBIT';
+  status: 'CLEARED' | 'PENDING' | 'FAILED';
+  referenceId?: string;
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  brokerId: string;
+  name: string;
+  bii: number;
+  tier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
+  dealsThisMonth: number;
+  trend: 'UP' | 'DOWN' | 'STABLE';
+  area: string;
+}

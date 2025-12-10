@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Layout } from './components/Layout';
 import { BuilderDashboard } from './components/views/BuilderDashboard';
@@ -6,6 +7,7 @@ import { InventoryView } from './components/views/InventoryView';
 import { BuyerView } from './components/views/BuyerView';
 import { BrokerListView } from './components/views/BrokerListView';
 import { LandingPage } from './components/views/LandingPage';
+import { WalletView } from './components/views/WalletView';
 import { Role } from './types';
 
 function App() {
@@ -34,6 +36,10 @@ function App() {
 
     if (currentView === 'inventory' || currentView === 'projects') {
       return <InventoryView />;
+    }
+
+    if (currentView === 'wallet') {
+      return <WalletView />;
     }
 
     if (currentRole === Role.BUILDER) {

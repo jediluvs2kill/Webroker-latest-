@@ -1,5 +1,6 @@
 
-import { Lead, LeadStatus, Project, Role, Unit, UnitStatus, BrokerStats, Activity, BrokerProfile, AllocationRequest } from './types';
+
+import { Lead, LeadStatus, Project, Role, Unit, UnitStatus, BrokerStats, Activity, BrokerProfile, AllocationRequest, Transaction, LeaderboardEntry } from './types';
 
 export const APP_NAME = "WeBroker";
 
@@ -111,4 +112,25 @@ export const ABSORPTION_DATA = [
   { name: 'Apr', velocity: 14 },
   { name: 'May', velocity: 12 },
   { name: 'Jun', velocity: 18 },
+];
+
+export const MOCK_TRANSACTIONS: Transaction[] = [
+  { id: 'tx1', date: 'Oct 24, 2024', description: 'Commission - Skyline Unit A-102', amount: 304000, type: 'CREDIT', status: 'CLEARED', referenceId: 'REF-88392' },
+  { id: 'tx2', date: 'Oct 12, 2024', description: 'Monthly Withdrawal', amount: 150000, type: 'DEBIT', status: 'CLEARED', referenceId: 'WD-99212' },
+  { id: 'tx3', date: 'Sep 30, 2024', description: 'Bonus - Q3 Top Performer', amount: 50000, type: 'CREDIT', status: 'CLEARED', referenceId: 'BNS-22100' },
+  { id: 'tx4', date: 'Sep 15, 2024', description: 'Commission - Green Valley V-12', amount: 900000, type: 'CREDIT', status: 'PENDING', referenceId: 'REF-77211' },
+  { id: 'tx5', date: 'Aug 28, 2024', description: 'Withdrawal', amount: 200000, type: 'DEBIT', status: 'CLEARED', referenceId: 'WD-88122' }
+];
+
+export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
+  { rank: 1, brokerId: 'b4', name: 'Anjali Mehta', bii: 95, tier: 'Platinum', dealsThisMonth: 12, trend: 'STABLE', area: 'Gurgaon' },
+  { rank: 2, brokerId: 'b1', name: 'Rahul Verma', bii: 92, tier: 'Platinum', dealsThisMonth: 10, trend: 'UP', area: 'Mumbai' },
+  { rank: 3, brokerId: 'b8', name: 'David Fernandes', bii: 88, tier: 'Platinum', dealsThisMonth: 8, trend: 'UP', area: 'Chennai' },
+  { rank: 4, brokerId: 'b2', name: 'Sneha Kapoor', bii: 84, tier: 'Gold', dealsThisMonth: 7, trend: 'DOWN', area: 'Bangalore' },
+  { rank: 5, brokerId: 'b6', name: 'Priya Reddy', bii: 81, tier: 'Gold', dealsThisMonth: 6, trend: 'UP', area: 'Hyderabad' },
+  { rank: 6, brokerId: 'b9', name: 'Zara Khan', bii: 79, tier: 'Gold', dealsThisMonth: 5, trend: 'DOWN', area: 'Mumbai' },
+  { rank: 7, brokerId: 'me', name: 'You', bii: 78, tier: 'Gold', dealsThisMonth: 4, trend: 'STABLE', area: 'Mumbai' },
+  { rank: 8, brokerId: 'b7', name: 'Amit Shah', bii: 72, tier: 'Silver', dealsThisMonth: 4, trend: 'UP', area: 'Ahmedabad' },
+  { rank: 9, brokerId: 'b3', name: 'Vikram Singh', bii: 68, tier: 'Silver', dealsThisMonth: 3, trend: 'DOWN', area: 'Delhi' },
+  { rank: 10, brokerId: 'b10', name: 'Suresh Patil', bii: 62, tier: 'Silver', dealsThisMonth: 2, trend: 'STABLE', area: 'Pune' },
 ];
